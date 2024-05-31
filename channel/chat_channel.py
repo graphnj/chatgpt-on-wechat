@@ -45,7 +45,7 @@ class ChatChannel(Channel):
             context["origin_ctype"] = ctype
         # context首次传入时，receiver是None，根据类型设置receiver
         first_in = "receiver" not in context
-        print(f'zjh _compose_context  {first_in}  {context}')
+        logger.debug(f'zjh _compose_context  {first_in}  {context}')
         # 群名匹配过程，设置session_id和receiver
         if first_in:  # context首次传入时，receiver是None，根据类型设置receiver
             config = conf()
@@ -53,7 +53,7 @@ class ChatChannel(Channel):
             user_data = conf().get_user_data(cmsg.from_user_id)
             context["openai_api_key"] = user_data.get("openai_api_key")
             context["gpt_model"] = user_data.get("gpt_model")
-            logging.debug(f'zjh {context}')
+            logger.debug(f'zjh first_in {context}')
             if context.get("isgroup", False):
                 group_name = cmsg.other_user_nickname
                 group_id = cmsg.other_user_id
@@ -86,6 +86,7 @@ class ChatChannel(Channel):
                 context["receiver"] = cmsg.other_user_id
             e_context = PluginManager().emit_event(EventContext(Event.ON_RECEIVE_MESSAGE, {"channel": self, "context": context}))
             context = e_context["context"]
+            logger.debug(f'zjh first_in89 {e_context}')
             if e_context.is_pass() or context is None:
                 return context
             if cmsg.from_user_id == self.user_id and not config.get("trigger_by_self", True):
@@ -98,7 +99,7 @@ class ChatChannel(Channel):
                 logger.debug(content)
                 logger.debug("[WX]reference query skipped")
                 return None
-            logger.debug(f'zjh {__file__} ')
+            logger.debug(f'zjh {__file__} {context}')
             nick_name_black_list = conf().get("nick_name_black_list", [])
             if context.get("isgroup", False):  # 群聊
                 # 校验关键字
@@ -162,7 +163,7 @@ class ChatChannel(Channel):
         elif context.type == ContextType.VOICE:
             if "desire_rtype" not in context and conf().get("voice_reply_voice") and ReplyType.VOICE not in self.NOT_SUPPORT_REPLYTYPE:
                 context["desire_rtype"] = ReplyType.VOICE
-
+        logger.debug(f'before return {context}')
         return context
 
     def _handle(self, context: Context):
