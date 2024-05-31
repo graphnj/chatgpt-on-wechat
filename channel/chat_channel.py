@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import threading
@@ -44,6 +45,7 @@ class ChatChannel(Channel):
             context["origin_ctype"] = ctype
         # context首次传入时，receiver是None，根据类型设置receiver
         first_in = "receiver" not in context
+        print(f'zjh _compose_context  {first_in}  {context}')
         # 群名匹配过程，设置session_id和receiver
         if first_in:  # context首次传入时，receiver是None，根据类型设置receiver
             config = conf()
@@ -51,6 +53,7 @@ class ChatChannel(Channel):
             user_data = conf().get_user_data(cmsg.from_user_id)
             context["openai_api_key"] = user_data.get("openai_api_key")
             context["gpt_model"] = user_data.get("gpt_model")
+            logging.debug(f'zjh {context}')
             if context.get("isgroup", False):
                 group_name = cmsg.other_user_nickname
                 group_id = cmsg.other_user_id
@@ -95,7 +98,7 @@ class ChatChannel(Channel):
                 logger.debug(content)
                 logger.debug("[WX]reference query skipped")
                 return None
-
+            logger.debug(f'zjh {__file__} ')
             nick_name_black_list = conf().get("nick_name_black_list", [])
             if context.get("isgroup", False):  # 群聊
                 # 校验关键字
@@ -186,6 +189,7 @@ class ChatChannel(Channel):
             )
         )
         reply = e_context["reply"]
+        print(f'zjh _generate_reply:{e_context}')
         if not e_context.is_pass():
             logger.debug("[WX] ready to handle context: type={}, content={}".format(context.type, context.content))
             if context.type == ContextType.TEXT or context.type == ContextType.IMAGE_CREATE:  # 文字和图片消息
